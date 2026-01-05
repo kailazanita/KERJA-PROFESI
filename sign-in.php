@@ -1,28 +1,55 @@
 <?php
+session_start();
 require_once 'koneksi.php';
 
 $user_data = null;
 $login_error = false;
+$error_message = "";
 
-if ($_POST) {
-    $id_user = $_POST['id_user'];
-    $password = $_POST['password'];
-    
-    $stmt = $connection->prepare("SELECT id_user, nama_user, password, program_studi, role FROM user WHERE id_user = ?");
-    $stmt->bind_param("s", $id_user);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    
-    if ($result->num_rows > 0) {
-        $user = $result->fetch_assoc();
+// Cek koneksi database
+if ($connection->connect_error) {
+    $error_message = "Database connection failed: " . $connection->connect_error;
+}
+
+if ($_POST && !$error_message) {
+    try {
+        $id_user = $_POST['id_user'];
+        $password = $_POST['password'];
         
-        if ($password === $user['password']) { 
-            $user_data = $user;
+        // Cek di tabel users
+        $stmt = $connection->prepare("SELECT id_user, nama_user, password, program_studi, role FROM user WHERE id_user = ?");
+        if (!$stmt) {
+            throw new Exception("Prepare failed: " . $connection->error);
+        }
+        
+        $stmt->bind_param("s", $id_user);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows > 0) {
+            $user = $result->fetch_assoc();
+            
+            // Verifikasi password
+            if ($password === $user['password']) {
+                $user_data = $user;
+                // Simpan data user ke session
+                $_SESSION['user_id'] = $user['id_user'];
+                $_SESSION['user_name'] = $user['nama_user'];
+                $_SESSION['user_role'] = $user['role'];
+                $_SESSION['program_studi'] = $user['program_studi'];
+            } else {
+                $login_error = true;
+                $error_message = "Password salah";
+            }
         } else {
             $login_error = true;
+            $error_message = "User tidak ditemukan";
         }
-    } else {
+        
+        $stmt->close();
+    } catch (Exception $e) {
         $login_error = true;
+        $error_message = "Error: " . $e->getMessage();
     }
 }
 ?>
@@ -32,7 +59,7 @@ if ($_POST) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kerja Profesi</title>
+    <title>Sistem Informasi Kerja Profesi</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -70,38 +97,38 @@ if ($_POST) {
             
             <?php if ($user_data['role'] === 'admin'): ?>
             <button id="btnAdmin">
-                <a href="admin/dashboard.php">
+                <a href="dashboard.php">
                     <h1>Admin</h1>
                 </a>
             </button>
             
             <?php elseif ($user_data['role'] === 'mahasiswa'): ?>
             <button id="btnMahasiswa">
-                <a href="mahasiswa/dashboard.php">
+                <a href="dashboard.php">
                     <h1>Mahasiswa</h1>
                     <h2><strong><?php echo $user_data['id_user']; ?></strong> : <?php echo $user_data['program_studi']; ?></h2>
                 </a>
             </button>
             
-            <?php elseif ($user_data['role'] === 'dosen pembimbing'): ?>
+            <?php elseif ($user_data['role'] === 'dosen_pembimbing'): ?>
             <button id="btnDosenPembimbing">
-                <a href="dosenPembimbing/dashboard.php">
+                <a href="dashboard.php">
                     <h1>Dosen Pembimbing</h1>
-                <h2><strong><?php echo $user_data['id_user']; ?></strong> : <?php echo $user_data['program_studi']; ?></h2>
-                </a>
-            </button>
-            
-            <?php elseif ($user_data['role'] === 'dosen penguji'): ?>
-            <button id="btnDosenPenguji">
-                <a href="dosenPenguji/dashboard.php">
-                    <h1>Dosen <h2>
                     <h2><strong><?php echo $user_data['id_user']; ?></strong> : <?php echo $user_data['program_studi']; ?></h2>
                 </a>
             </button>
             
-            <?php elseif ($user_data['role'] === 'koordinator kp'): ?>
+            <?php elseif ($user_data['role'] === 'dosen_penguji'): ?>
+            <button id="btnDosenPenguji">
+                <a href="dashboard.php">
+                    <h1>Dosen Penguji</h1>
+                    <h2><strong><?php echo $user_data['id_user']; ?></strong> : <?php echo $user_data['program_studi']; ?></h2>
+                </a>
+            </button>
+            
+            <?php elseif ($user_data['role'] === 'koordinator'): ?>
             <button id="btnKoordinator">
-                <a href="koordinator/dashboard.php">
+                <a href="dashboard.php">
                     <h1>Koordinator KP</h1>
                     <h2><strong><?php echo $user_data['id_user']; ?></strong> : <?php echo $user_data['program_studi']; ?></h2>
                 </a>
@@ -109,7 +136,7 @@ if ($_POST) {
             
             <?php elseif ($user_data['role'] === 'kaprodi'): ?>
             <button id="btnKaprodi">
-                <a href="kaprodi/dashboard.php">
+                <a href="dashboard.php">
                     <h1>Kepala Program Studi</h1>
                     <h2><strong><?php echo $user_data['id_user']; ?></strong> : <?php echo $user_data['program_studi']; ?></h2>
                 </a>
