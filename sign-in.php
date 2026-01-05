@@ -33,10 +33,29 @@ if ($_POST) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kerja Profesi</title>
-    <link rel="stylesheet" href="sign-in.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="sign-in.css?v=<?php echo time(); ?>">
+    <script>
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const eyeIcon = document.getElementById('eyeIcon');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.setAttribute('fill', 'none');
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.setAttribute('fill', 'currentColor');
+            }
+        }
+    </script>
 </head>
 <body>
     <div class="main-content">
+        <div class="logo-container">
+            <div class="logo"></div>
+        </div>
         <h1 class="title">Sistem Informasi Kerja Profesi</h1>
         
         <?php if ($error_message): ?>
@@ -60,7 +79,7 @@ if ($_POST) {
             <button id="btnMahasiswa">
                 <a href="mahasiswa/dashboard.php">
                     <h1>Mahasiswa</h1>
-                    <h2><?php echo $user_data['id_user']; ?> : <?php echo $user_data['program_studi']; ?></h2>
+                    <h2><strong><?php echo $user_data['id_user']; ?></strong> : <?php echo $user_data['program_studi']; ?></h2>
                 </a>
             </button>
             
@@ -68,7 +87,7 @@ if ($_POST) {
             <button id="btnDosenPembimbing">
                 <a href="dosenPembimbing/dashboard.php">
                     <h1>Dosen Pembimbing</h1>
-                <h2><?php echo $user_data['id_user']; ?> : <?php echo $user_data['program_studi']; ?></h2>
+                <h2><strong><?php echo $user_data['id_user']; ?></strong> : <?php echo $user_data['program_studi']; ?></h2>
                 </a>
             </button>
             
@@ -76,7 +95,7 @@ if ($_POST) {
             <button id="btnDosenPenguji">
                 <a href="dosenPenguji/dashboard.php">
                     <h1>Dosen <h2>
-                    <h2><?php echo $user_data['id_user']; ?> : <?php echo $user_data['program_studi']; ?></h2>
+                    <h2><strong><?php echo $user_data['id_user']; ?></strong> : <?php echo $user_data['program_studi']; ?></h2>
                 </a>
             </button>
             
@@ -84,7 +103,7 @@ if ($_POST) {
             <button id="btnKoordinator">
                 <a href="koordinator/dashboard.php">
                     <h1>Koordinator KP</h1>
-                    <h2><?php echo $user_data['id_user']; ?> : <?php echo $user_data['program_studi']; ?></h2>
+                    <h2><strong><?php echo $user_data['id_user']; ?></strong> : <?php echo $user_data['program_studi']; ?></h2>
                 </a>
             </button>
             
@@ -92,7 +111,7 @@ if ($_POST) {
             <button id="btnKaprodi">
                 <a href="kaprodi/dashboard.php">
                     <h1>Kepala Program Studi</h1>
-                    <h2><?php echo $user_data['id_user']; ?> : <?php echo $user_data['program_studi']; ?></h2>
+                    <h2><strong><?php echo $user_data['id_user']; ?></strong> : <?php echo $user_data['program_studi']; ?></h2>
                 </a>
             </button>
             
@@ -105,7 +124,6 @@ if ($_POST) {
         </div>
         
         <?php elseif ($login_error): ?>
-        <!-- Error Login -->
         <div class="error">
             <p>Login gagal! <?php echo $error_message ? htmlspecialchars($error_message) : 'ID User atau password salah.'; ?></p>
             <a href="sign-in.php">Coba lagi</a>
@@ -113,18 +131,36 @@ if ($_POST) {
         
         <?php else: ?>
         <!-- Form Login -->
-        <form method="post">
-            <label for="id_user">User ID</label>
-            <br>
-            <input type="text" id="id_user" name="id_user" required>
-            <br><br>
-            <label for="password">Password</label>
-            <br>
-            <input type="password" id="password" name="password" required>
-            <br><br>
-            <button type="submit">Masuk</button>
-        </form>
+        <div class="login-form">
+            <form method="post">
+                <div class="form-group">
+                    <label for="id_user">NIM/NIDN</label>
+                    <input type="text" id="id_user" name="id_user" placeholder="Masukkan NIM/NIDN" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="password" name="password" placeholder="Masukkan password" required>
+                        <button type="button" class="toggle-password" onclick="togglePassword()">
+                            <svg class="eye-icon" id="eyeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                <path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn-login">Masuk</button>
+                </div>
+            </form>
+        </div>
         <?php endif; ?>
+
+        <footer>
+            <p>&copy; 2026 Sistem Informasi Kerja Profesi</p>
+        </footer>
     </div>
 </body>
 </html>
